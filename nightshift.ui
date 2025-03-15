@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>NightShift</class>
+ <widget class="QMainWindow" name="NightShift">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>1290</width>
+    <height>643</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>NightShift</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">background-color:#1e1e1e;
+</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <widget class="QTabWidget" name="tabWidget">
+    <property name="geometry">
+     <rect>
+      <x>280</x>
+      <y>150</y>
+      <width>751</width>
+      <height>411</height>
+     </rect>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="styleSheet">
+     <string notr="true">QTabWidget::pane { 
+	border-top: 1px solid #2c2c2c; 
+	border-left : 1px solid #2c2c2c ; 
+}
+
+QTabBar::tab {
+	border: 1px solid #2c2c2c;
+	color : white ; 
+	font-size : 13px ; 
+	background-color: #2f2f2f ; 
+	padding: 8px 70px 8px 15px; 
+}
+
+QTabBar::tab:selected {
+	border : 1px solid #2c2c2c ;
+	background-color: #1e1e1e;  
+	border-bottom : 0 ;  
+}
+
+QTabWidget::tab-bar {
+    top :1px ;
+}
+
+
+QTabBar::tab:last {
+   padding: 8px 15px 8px 15px;
+}
+
+</string>
+    </property>
+    <property name="currentIndex">
+     <number>0</number>
+    </property>
+    <widget class="QWidget" name="tab">
+     <attribute name="title">
+      <string>Page</string>
+     </attribute>
+    </widget>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
