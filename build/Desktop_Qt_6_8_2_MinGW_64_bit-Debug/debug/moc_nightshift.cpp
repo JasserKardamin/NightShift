@@ -42,7 +42,7 @@ static constexpr auto qt_meta_stringdata_ZN10NightShiftE = QtMocHelpers::stringD
     "AddTab",
     "",
     "index",
-    "onTextChanged"
+    "LuaTextformater"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
@@ -84,7 +84,7 @@ Q_CONSTINIT const QMetaObject NightShift::staticMetaObject = { {
         // method 'AddTab'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         QtPrivate::TypeAndForceComplete<int, std::false_type>,
-        // method 'onTextChanged'
+        // method 'LuaTextformater'
         QtPrivate::TypeAndForceComplete<void, std::false_type>
     >,
     nullptr
@@ -96,7 +96,7 @@ void NightShift::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
     if (_c == QMetaObject::InvokeMetaMethod) {
         switch (_id) {
         case 0: _t->AddTab((*reinterpret_cast< std::add_pointer_t<int>>(_a[1]))); break;
-        case 1: _t->onTextChanged(); break;
+        case 1: _t->LuaTextformater(); break;
         default: ;
         }
     }

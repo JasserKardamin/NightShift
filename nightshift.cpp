@@ -1,9 +1,5 @@
 #include "nightshift.h"
 #include "ui_nightshift.h"
-#include <QResizeEvent>
-#include <QVBoxLayout>
-#include <QPlainTextEdit>
-#include <QStack>
 
 
 NightShift::NightShift(QWidget *parent)
@@ -11,12 +7,14 @@ NightShift::NightShift(QWidget *parent)
     , ui(new Ui::NightShift)
 {
     //app config :
-    QIcon appIcon(":/logo/assets/logo.png");
+    QIcon appIcon(":/logo/assets/logo.png"); // loading icon
+    QString LuaPath = QCoreApplication::applicationDirPath() + "/plugin.lua"; // lua formater config
+    this->L = this->luaFile->InitLua(LuaPath);  //lua initalize :
+
     ui->setupUi(this);
     this->showMaximized();
     this->setWindowIcon(appIcon) ;
 
-    //tab widget config :
 
     // rendering the starting adding widget
     this->ui->tabWidget->setTabText(0, "+");
@@ -29,6 +27,7 @@ NightShift::NightShift(QWidget *parent)
     this->ui->tabWidget->insertTab(widgetSize-1,FirstWidget ,"New File * ") ;
     this->ui->tabWidget->setCurrentIndex(widgetSize-1);
 
+
     //signals :
     connect(this->ui->tabWidget, &QTabWidget::currentChanged, this, &NightShift::AddTab);
 
@@ -36,6 +35,8 @@ NightShift::NightShift(QWidget *parent)
 
 NightShift::~NightShift()
 {
+    //freeing the lua space :
+    lua_close(L);
     delete ui;
 }
 
@@ -57,7 +58,7 @@ void NightShift::RenderTextArea(QWidget* newTabWidget) {
     textEdit->setPlaceholderText("Write your clean code here :) ");
     textEdit->setFont(jetBrainsFont);
 
-    connect(textEdit, &QPlainTextEdit::textChanged, this, &NightShift::onTextChanged);
+    connect(textEdit, &QPlainTextEdit::textChanged, this, &NightShift::LuaTextformater);
 
     QVBoxLayout* layout = new QVBoxLayout(newTabWidget);
     layout->addWidget(textEdit);
@@ -66,16 +67,59 @@ void NightShift::RenderTextArea(QWidget* newTabWidget) {
 }
 
 
-void NightShift::onTextChanged() {
+// lua cpp documentation :
 
+void NightShift::LuaTextformater() {
+
+    // Find the current QPlainTextEdit
     QPlainTextEdit *textEdit = this->ui->tabWidget->currentWidget()->findChild<QPlainTextEdit *>();
-    if (!textEdit) return;
+    QString content = textEdit->toPlainText();
 
-    QString text = textEdit->toPlainText();
+    // Save the current cursor position
     QTextCursor cursor = textEdit->textCursor();
-    int cursorPos = cursor.position();
-    this->autocompletion(text,cursorPos,cursor,textEdit);
+    int cursorPosition = cursor.position();
+
+    int cursorRow = cursor.blockNumber();
+    int cursorColumn = cursor.positionInBlock();
+    QString currentLine = cursor.block().text();
+
+    //blocking infinite loops:
+    disconnect(textEdit, &QPlainTextEdit::textChanged, this, &NightShift::LuaTextformater);
+
+
+    //lua function config
+    lua_getglobal(this->L, "format_text"); // format_text to change !
+
+    if (!lua_isfunction(this->L, -1)) {
+        qDebug() << "Lua function 'format_text' not found or not a function";
+        return;
+    }
+
+    lua_pushstring(this->L, content.toUtf8().constData());
+    lua_pushinteger(this->L, cursorRow);
+    lua_pushinteger(this->L, cursorColumn);
+    lua_pushstring(this->L, currentLine.toUtf8().constData());
+
+    if (lua_pcall(this->L, 4, 1, 0) != LUA_OK) {
+        qDebug() << "Lua error:" << lua_tostring(this->L, -1);
+        return;
+    }
+
+    const char *result = lua_tostring(this->L, -1);
+    if (result) {
+        textEdit->setPlainText(QString::fromUtf8(result));
+
+        // Restore the cursor position
+        cursor.setPosition(cursorPosition);
+        textEdit->setTextCursor(cursor);
+    } else {
+        qDebug() << "Lua function returned nil";
+    }
+
+    // Reconnect the signal
+    connect(textEdit, &QPlainTextEdit::textChanged, this, &NightShift::LuaTextformater);
 }
+
 
 
 
@@ -111,31 +155,5 @@ void NightShift::resizeEvent(QResizeEvent *event)
     QMainWindow::resizeEvent(event);
 }
 
-
-//typing autocompletion :
-void NightShift::autocompletion(QString text ,int cursorPos , QTextCursor cursor , QPlainTextEdit *textEdit) {
-    static QString previousText = "";
-    bool isDeleting = (text.length() < previousText.length());
-    previousText = text;
-
-    if (isDeleting) return;
-
-    if (cursorPos > 0 && text.length() >= cursorPos) {
-        QChar insertedChar = text.at(cursorPos - 1);
-        static const QHash<QChar, QChar> bracketPairs = {
-            {'{', '}'},
-            {'[', ']'},
-            // {'(', ')'}
-        };
-
-        if (bracketPairs.contains(insertedChar)) {
-            textEdit->insertPlainText(QString(bracketPairs[insertedChar]));
-            if(insertedChar == '{') {
-                cursor.movePosition(QTextCursor::Left);
-            }
-            textEdit->setTextCursor(cursor);
-        }
-    }
-}
 
 

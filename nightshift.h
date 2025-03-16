@@ -1,9 +1,18 @@
 #ifndef NIGHTSHIFT_H
 #define NIGHTSHIFT_H
 
+#include <lua.hpp>
+#include "luaplugins.h"
+
 #include <QMainWindow>
 #include <QTextCursor>
 #include <QPlainTextEdit>
+#include <QResizeEvent>
+#include <QVBoxLayout>
+#include <QStack>
+#include <QTextBlock>
+
+
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -17,7 +26,7 @@ class NightShift : public QMainWindow
 
 private slots:
     void AddTab(int index) ;
-    void onTextChanged();
+    void LuaTextformater();
 
 
 public:
@@ -26,10 +35,11 @@ public:
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
-    void RenderTextArea(QWidget* newTabWidget) ;
-    void autocompletion(QString text ,int cursorPos , QTextCursor cursor , QPlainTextEdit *textEdit) ;
+    void RenderTextArea(QWidget* newTabWidget ) ;
 
 private:
     Ui::NightShift *ui;
+    luaPlugins *luaFile ;
+    lua_State *L;
 };
 #endif // NIGHTSHIFT_H
